@@ -1,33 +1,30 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
 const hre = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  // Deploying JDAI.sol
+  const JDAI = await hre.ethers.getContractFactory("JDAI");
+  const jdai = await JDAI.deploy(); // Add constructor parameters if any
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  await jdai.deployed();
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+  console.log("JDAI deployed to:", jdai.address);
 
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
+  // Deploying TokenFaucet.sol
+  const TokenFaucet = await hre.ethers.getContractFactory("TokenFaucet");
+  const tokenFaucet = await TokenFaucet.deploy(
+    jdai.address, // Assuming TokenFaucet's constructor takes JDAI's address, amountPerClaim, and cooldownPeriod
+    hre.ethers.utils.parseUnits("10", 18), // "10" is the amount per claim, modify as per your requirement
+    3600 // Cooldown period in seconds, modify as per your requirement
   );
+
+  await tokenFaucet.deployed();
+
+  console.log("TokenFaucet deployed to:", tokenFaucet.address);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
