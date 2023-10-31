@@ -1,6 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
-
 require("@nomiclabs/hardhat-etherscan");
+require('@nomiclabs/hardhat-waffle')
 require("dotenv").config();
 
 const GOERLI_PRIVATE_KEY = process.env.GOERLI_PRIVATE_KEY;
